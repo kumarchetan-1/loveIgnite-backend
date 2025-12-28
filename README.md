@@ -1,76 +1,92 @@
 # Love Ignite Backend
 
-This is the backend service for the Love Ignite app, built with Node.js, Express, TypeScript, and Prisma.
+The backend service for the Love Ignite app, providing user authentication, cloud synchronization for achievements, and unlocked challenge tracking.
 
-## Prerequisites
+## 🚀 Tech Stack
 
-- Node.js (v18 or later)
-- Docker and Docker Compose (optional, for local DB)
-- PostgreSQL (if not using Docker)
+- **Runtime**: Node.js (Bun recommended)
+- **Framework**: Express (v5)
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Auth**: JWT & Bcrypt
+- **Containerization**: Docker
 
-## Setup
+## 🛠 Getting Started
 
-1. **Install dependencies:**
+### Prerequisites
+
+- [Bun](https://bun.sh/) runtime installed.
+- [Docker](https://www.docker.com/) (optional, for local database).
+- [PostgreSQL](https://www.postgresql.org/) instance.
+
+### Installation
+
+1. Clone the repository and navigate to the backend folder:
    ```bash
-   npm install
+   cd loveIgnite-backend
    ```
 
-2. **Environment Variables:**
-   Create a `.env` file in the root directory and add the following:
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+3. Configure Environment Variables:
+   Create a `.env` file in the root:
    ```env
    DATABASE_URL="postgresql://user:password@localhost:5432/loveignite?schema=public"
-   JWT_SECRET="your-secret-key"
+   JWT_SECRET="your-secure-key"
    PORT=3000
    ```
 
-3. **Database Migration:**
-   If you have a PostgreSQL instance running, run the following to create the tables:
+4. Run Database Migrations:
    ```bash
-   npx prisma migrate dev --name init
+   bun run prisma:migrate
    ```
 
-## Running the App
+### Running the Server
 
-### Using Docker (Recommended for development)
+#### Development Mode (Bun)
+```bash
+bun run dev
+```
 
+#### Production Mode
+```bash
+bun run build
+bun start
+```
+
+#### Using Docker
 ```bash
 docker-compose up --build
 ```
 
-This will start both the PostgreSQL database and the Express server.
+## 📡 API Endpoints
 
-### Locally
+### Authentication
+- `POST /api/auth/signup`: Create account (`email`, `password`, `name`).
+- `POST /api/auth/login`: Authenticate and receive JWT.
 
-1. Start your PostgreSQL database.
-2. Run the server:
-   ```bash
-   npm run dev
-   ```
+### User Data (Protected)
+- `GET /api/user/profile`: Retrieve user profile, achievements, and unlocked cards.
+- `POST /api/user/sync-achievements`: Sync an array of `achievementIds`.
+- `POST /api/user/sync-cards`: Sync an array of `cardIds`.
 
-## API Endpoints
+## 📂 Project Structure
 
-### Auth
-- `POST /api/auth/signup`: Create a new account. Body: `{ "email": "...", "password": "..." }`
-- `POST /api/auth/login`: Log in. Body: `{ "email": "...", "password": "..." }`
+```text
+src/
+├── controllers/    # Request handlers
+├── middleware/     # Auth and validation logic
+├── routes/         # API route definitions
+├── lib/            # Shared utilities (Prisma client)
+└── index.ts        # Server entry point
+```
 
-### User (Requires Bearer Token)
-- `GET /api/user/profile`: Get user achievements and unlocked cards.
-- `POST /api/user/sync-achievements`: Sync achievements. Body: `{ "achievements": ["id1", "id2"] }`
-- `POST /api/user/sync-cards`: Sync unlocked cards. Body: `{ "cardIds": ["id1", "id2"] }`
+## ☁️ Deployment
 
-## Deployment to GCP
+This project is Docker-compatible and ready for deployment to **Google Cloud Run** or any container-based platform.
 
-This project is ready to be deployed to **Google Cloud Run**.
-
-1. Build the Docker image:
-   ```bash
-   gcloud builds submit --tag gcr.io/[PROJECT-ID]/loveignite-backend
-   ```
-
-2. Deploy to Cloud Run:
-   ```bash
-   gcloud run deploy loveignite-backend --image gcr.io/[PROJECT-ID]/loveignite-backend --platform managed
-   ```
-
-Make sure to set the `DATABASE_URL` (pointing to Cloud SQL) and `JWT_SECRET` in the Cloud Run environment variables.
-
+1. Build the image: `docker build -t loveignite-backend .`
+2. Push and deploy to your preferred cloud provider.
