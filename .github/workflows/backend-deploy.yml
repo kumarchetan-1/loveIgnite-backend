@@ -22,19 +22,14 @@ jobs:
           key: ${{ secrets.MY_PRIVATE_KEY }}
           passphrase: ${{ secrets.PRIVATEKEY_PASSPHRASE }}
           script: |
-            # Create the project directory if it doesn't exist
-            mkdir -p ~/loveIgnite-backend
-            cd ~/loveIgnite-backend 
+            # Navigate to the project directory
+            cd ~/loveIgnite-backend
             
-            # If the directory is not a git repo, clone it
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/kumarchetan-1/loveIgnite-backend.git .
-            else
-              git pull origin main
-            fi
+            # Pull latest changes
+            git pull origin main
             
             # Restart containers
-            # docker-compose up -d --build
+            docker-compose up -d --build
             
             # Clean up old images
-            # docker image prune -f
+            docker image prune -f
