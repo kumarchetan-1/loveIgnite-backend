@@ -20,7 +20,7 @@ jobs:
           host: ${{ vars.DROPLET_IP }}
           username: ${{ secrets.DROPLET_USER || 'root' }}
           key: ${{ secrets.MY_PRIVATE_KEY }}
-          passphrase: ${{ secrets.MY_PRIVATE_KEY_PASSPHRASE }}
+          passphrase: ${{ secrets.PRIVATEKEY_PASSPHRASE }}
           script: |
             # Navigate to the repo directory
             cd ~/loveIgnite-backend
