@@ -1,13 +1,18 @@
 import type { Response } from 'express';
 import type { AuthRequest } from '../middleware/authMiddleware.js';
-import prisma from '../lib/prisma.js';
+import prismaClient from '../lib/prisma.js';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const user = await prismaClient.user.findUnique({
+      where: { 
+        id: userId
+      },
       include: {
         achievements: true,
         unlockedCards: true,
@@ -37,7 +42,7 @@ export const syncAchievements = async (req: AuthRequest, res: Response) => {
     // Basic sync: delete and re-insert or use upsert
     // For simplicity, we'll just add the ones that don't exist
     const operations = achievements.map((id: string) => 
-      prisma.userAchievement.upsert({
+      prismaClient.userAchievement.upsert({
         where: { userId_achievementId: { userId, achievementId: id } },
         update: {},
         create: { userId, achievementId: id }
@@ -57,7 +62,7 @@ export const syncUnlockedCards = async (req: AuthRequest, res: Response) => {
 
   try {
     const operations = cardIds.map((id: string) => 
-      prisma.unlockedCard.upsert({
+      prismaClient.unlockedCard.upsert({
         where: { userId_cardId: { userId, cardId: id } },
         update: {},
         create: { userId, cardId: id }

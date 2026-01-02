@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/controllers/authcontroller.ts","./src/controllers/usercontroller.ts","./src/lib/prisma.ts","./src/middleware/authmiddleware.ts","./src/routes/authroutes.ts","./src/routes/userroutes.ts"],"version":"5.9.3"}
