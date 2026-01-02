@@ -24,7 +24,7 @@ jobs:
           script: |
             # Create the project directory if it doesn't exist
             mkdir -p ~/loveIgnite-backend
-            cd ~/loveIgnite-backend
+            cd ~/loveIgnite-backend 
             
             # If the directory is not a git repo, clone it
             if [ ! -d ".git" ]; then
