@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'loveIgnite-backend/**'
+      - '**'
       - '.github/workflows/backend-deploy.yml'
 
 jobs:
@@ -17,12 +17,19 @@ jobs:
       - name: Deploy to DigitalOcean Droplet
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DROPLET_IP }}
-          username: ${{ secrets.DROPLET_USER }}
-          key: ${{ secrets.DROPLET_SSH_KEY }}
+          host: ${{ vars.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER || 'root' }}
+          key: ${{ secrets.MY_PRIVATE_KEY }}
+          passphrase: ${{ secrets.MY_PRIVATE_KEY_PASSPHRASE }}
           script: |
-            cd ~/love-ignite/loveIgnite-backend
+            # Navigate to the repo directory
+            cd ~/loveIgnite-backend
+            
+            # Pull latest changes
             git pull origin main
-            docker-compose up -d --build
-            docker image prune -f
-
+            
+            # Restart containers
+            # docker-compose up -d --build
+            
+            # Clean up old images
+            # docker image prune -f
