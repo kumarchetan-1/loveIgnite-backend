@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1 AS builder
 
 WORKDIR /app
 
@@ -9,6 +9,7 @@ COPY package.json ./
 COPY bun.lock* bun.lockb* ./
 COPY prisma ./prisma/
 
+# Install all dependencies (including dev deps for prisma)
 RUN bun install
 
 # Copy source and generate Prisma client
@@ -16,7 +17,7 @@ COPY . .
 RUN bun run prisma:generate
 
 # Stage 2: Runtime
-FROM oven/bun:1-alpine
+FROM oven/bun:1-slim
 
 WORKDIR /app
 
