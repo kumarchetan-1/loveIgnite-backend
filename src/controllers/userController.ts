@@ -26,6 +26,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     res.json({
       email: user.email,
       name: user.name,
+      isPremium: user.isPremium,
       achievements: user.achievements.map((a: any) => a.achievementId),
       unlockedCards: user.unlockedCards.map((c: any) => c.cardId),
     });
@@ -71,6 +72,21 @@ export const syncUnlockedCards = async (req: AuthRequest, res: Response) => {
 
     await Promise.all(operations);
     res.json({ message: 'Unlocked cards synced successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const setPremiumStatus = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+  const { isPremium } = req.body;
+
+  try {
+    await prismaClient.user.update({
+      where: { id: userId },
+      data: { isPremium }
+    });
+    res.json({ message: 'Premium status updated successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
