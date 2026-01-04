@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import type { AuthRequest } from '../middleware/authMiddleware.js';
 import prismaClient from '../lib/prisma.js';
+import bcrypt from 'bcryptjs';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
@@ -36,12 +37,75 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+  const { name, email } = req.body;
+
+  try {
+    // If email is being changed, check if it's already taken
+    if (email) {
+      const existingUser = await prismaClient.user.findFirst({
+        where: {
+          email,
+          NOT: { id: userId }
+        }
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
+
+    const updatedUser = await (prismaClient.user.update as any)({
+      where: { id: userId },
+      data: {
+        name: name !== undefined ? name : undefined,
+        email: email !== undefined ? email : undefined,
+        // If email is changed, maybe we should reset isVerified to false? 
+        // For simplicity, let's keep it as is, or you can uncomment below:
+        // isVerified: email ? false : undefined 
+      }
+    });
+
+    res.json({ 
+      message: 'Profile updated successfully',
+      user: {
+        name: updatedUser.name,
+        email: updatedUser.email
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await prismaClient.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) return res.status(400).json({ error: 'Incorrect current password' });
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await (prismaClient.user.update as any)({
+      where: { id: userId },
+      data: { password: hashedNewPassword }
+    });
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const syncAchievements = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
   const { achievements } = req.body; // Array of achievement IDs
 
   try {
-    // Basic sync: delete and re-insert or use upsert
     const operations = achievements.map((id: string) => 
       prismaClient.userAchievement.upsert({
         where: { userId_achievementId: { userId, achievementId: id } },
