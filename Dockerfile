@@ -14,10 +14,14 @@ RUN bun install
 
 # Copy source and generate Prisma client
 COPY . .
-RUN bun run prisma:generate
+# Provide a dummy URL so prisma:generate doesn't fail during build
+RUN DATABASE_URL="postgresql://unused:unused@localhost:5432/unused" bun run prisma:generate
 
 # Stage 2: Runtime
-FROM oven/bun:1-slim
+FROM oven/bun:1
+
+# Install SSL certificates (required for Prisma to connect to DB)
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

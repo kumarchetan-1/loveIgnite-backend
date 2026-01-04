@@ -27,10 +27,24 @@ jobs:
             # Pull latest changes
             git pull origin main
             
-            # Inject secrets into .env file or use them in docker-compose
-            # Option: Update the remote .env file with secrets from GitHub
-            sed -i "s|^BREVO_API_KEY=.*|BREVO_API_KEY=${{ secrets.BREVO_SMTP_API_KEY }}|" .env || echo "BREVO_API_KEY=${{ secrets.BREVO_SMTP_API_KEY }}" >> .env
-            sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|" .env || echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            # Ensure .env exists
+            touch .env
+            
+            # Robustly inject or update secrets in .env
+            update_env() {
+              key=$1
+              val=$2
+              if [ -n "$val" ]; then
+                if grep -q "^${key}=" .env; then
+                  sed -i "s@^${key}=.*@${key}=${val}@" .env
+                else
+                  echo "${key}=${val}" >> .env
+                fi
+              fi
+            }
+            
+            update_env "BREVO_API_KEY" "${{ secrets.BREVO_SMTP_API_KEY }}"
+            update_env "JWT_SECRET" "${{ secrets.JWT_SECRET }}"
             
             # Restart containers
             docker-compose up -d --build
