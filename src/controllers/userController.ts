@@ -26,7 +26,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     res.json({
       email: user.email,
       name: user.name,
-      isPremium: user.isPremium,
+      isPremium: (user as any).isPremium ?? false,
       achievements: user.achievements.map((a: any) => a.achievementId),
       unlockedCards: user.unlockedCards.map((c: any) => c.cardId),
     });
@@ -82,7 +82,7 @@ export const setPremiumStatus = async (req: AuthRequest, res: Response) => {
   const { isPremium } = req.body;
 
   try {
-    await prismaClient.user.update({
+    await (prismaClient.user.update as any)({
       where: { id: userId },
       data: { isPremium }
     });

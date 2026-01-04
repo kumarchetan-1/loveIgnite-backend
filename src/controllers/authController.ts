@@ -32,7 +32,7 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json({ 
       token, 
       userId: user.id,
-      isPremium: user.isPremium 
+      isPremium: (user as any).isPremium ?? false
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response) => {
       userId: user.id,
       name: user.name,
       email: user.email,
-      isPremium: user.isPremium
+      isPremium: (user as any).isPremium ?? false
     });
   } catch (error) {
     console.error('Login error:', error);
