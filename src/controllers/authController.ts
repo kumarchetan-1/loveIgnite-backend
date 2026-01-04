@@ -29,7 +29,11 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
-    res.status(201).json({ token, userId: user.id });
+    res.status(201).json({ 
+      token, 
+      userId: user.id,
+      isPremium: user.isPremium 
+    });
   } catch (error) {
     console.error('Signup error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -61,7 +65,8 @@ export const login = async (req: Request, res: Response) => {
       token, 
       userId: user.id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      isPremium: user.isPremium
     });
   } catch (error) {
     console.error('Login error:', error);
