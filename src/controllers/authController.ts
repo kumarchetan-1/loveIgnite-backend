@@ -14,8 +14,10 @@ const generateOTP = () => {
 
 // Helper to send email via Brevo
 const sendEmail = async (to: string, name: string, otp: string, type: 'verification' | 'reset' = 'verification') => {
+  console.log(`Attempting to send ${type} email to: ${to}`);
+  
   if (!BREVO_API_KEY) {
-    console.error('BREVO_API_KEY is missing');
+    console.error('BREVO_API_KEY is missing in environment variables');
     return;
   }
 
@@ -23,34 +25,40 @@ const sendEmail = async (to: string, name: string, otp: string, type: 'verificat
   const title = type === 'verification' ? 'Welcome to Love Ignite!' : 'Password Reset Request';
   const message = type === 'verification' ? 'Please use the following code to verify your email address:' : 'Please use the following code to reset your password:';
 
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': BREVO_API_KEY,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      sender: { name: 'Love Ignite', email: BREVO_SENDER_EMAIL },
-      to: [{ email: to, name: name }],
-      subject: subject,
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-          <h2 style="color: #ff2d55;">${title}</h2>
-          <p>${message}</p>
-          <div style="background: #f4f4f4; padding: 15px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; border-radius: 8px;">
-            ${otp}
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'Love Ignite', email: BREVO_SENDER_EMAIL },
+        to: [{ email: to, name: name }],
+        subject: subject,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #ff2d55;">${title}</h2>
+            <p>${message}</p>
+            <div style="background: #f4f4f4; padding: 15px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; border-radius: 8px;">
+              ${otp}
+            </div>
+            <p>This code will expire in 10 minutes.</p>
+            <p>If you didn't request this, you can safely ignore this email.</p>
           </div>
-          <p>This code will expire in 10 minutes.</p>
-          <p>If you didn't request this, you can safely ignore this email.</p>
-        </div>
-      `
-    })
-  });
+        `
+      })
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    console.error('Brevo API error:', error);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Brevo API error details:', JSON.stringify(errorData));
+    } else {
+      console.log(`Successfully sent ${type} email to: ${to}`);
+    }
+  } catch (error) {
+    console.error('Failed to call Brevo API:', error);
   }
 };
 
@@ -218,6 +226,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const user = await prismaClient.user.findUnique({ where: { email } });
     if (!user) {
+      console.log(`Forgot password attempt for non-existent email: ${email}`);
       // For security reasons, don't reveal if user exists
       return res.json({ message: 'If an account exists with this email, a reset code has been sent.' });
     }
