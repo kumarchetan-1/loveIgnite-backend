@@ -22,11 +22,15 @@ jobs:
           key: ${{ secrets.MY_PRIVATE_KEY }}
           passphrase: ${{ secrets.PRIVATEKEY_PASSPHRASE }}
           script: |
-            # Navigate to the project directory
             cd ~/loveIgnite-backend
             
             # Pull latest changes
             git pull origin main
+            
+            # Inject secrets into .env file or use them in docker-compose
+            # Option: Update the remote .env file with secrets from GitHub
+            sed -i "s|^BREVO_API_KEY=.*|BREVO_API_KEY=${{ secrets.BREVO_SMTP_API_KEY }}|" .env || echo "BREVO_API_KEY=${{ secrets.BREVO_SMTP_API_KEY }}" >> .env
+            sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|" .env || echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             
             # Restart containers
             docker-compose up -d --build

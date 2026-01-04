@@ -27,6 +27,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       email: user.email,
       name: user.name,
       isPremium: (user as any).isPremium ?? false,
+      isVerified: (user as any).isVerified ?? false,
       achievements: user.achievements.map((a: any) => a.achievementId),
       unlockedCards: user.unlockedCards.map((c: any) => c.cardId),
     });
@@ -41,7 +42,6 @@ export const syncAchievements = async (req: AuthRequest, res: Response) => {
 
   try {
     // Basic sync: delete and re-insert or use upsert
-    // For simplicity, we'll just add the ones that don't exist
     const operations = achievements.map((id: string) => 
       prismaClient.userAchievement.upsert({
         where: { userId_achievementId: { userId, achievementId: id } },
@@ -91,4 +91,3 @@ export const setPremiumStatus = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
