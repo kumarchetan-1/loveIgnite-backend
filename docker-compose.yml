@@ -10,11 +10,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - BREVO_API_KEY=${BREVO_API_KEY}
-      - PORT=3000
+    # We remove the "environment" block here because "env_file" 
+    # already handles injecting everything from your .env file.
     command: >
       sh -c "sleep 5 && bun run prisma:deploy && bun src/index.ts"
     restart: always
@@ -29,6 +26,7 @@ services:
     restart: always
     env_file:
       - .env
+    # Keeping these for the DB as they are standard for the postgres image
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

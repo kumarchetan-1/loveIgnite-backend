@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "isVerified" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "verificationOTP" TEXT,
+ADD COLUMN "otpExpiry" TIMESTAMP(3),
+ADD COLUMN "isPremium" BOOLEAN NOT NULL DEFAULT false;

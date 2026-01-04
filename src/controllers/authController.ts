@@ -5,6 +5,7 @@ import prismaClient from '../lib/prisma.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'kumarchetan.npr@gmail.com';
 
 // Helper to generate a 6-digit OTP
 const generateOTP = () => {
@@ -26,7 +27,7 @@ const sendEmail = async (to: string, name: string, otp: string) => {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      sender: { name: 'Love Ignite', email: 'noreply@loveignite.chetankumar.me' },
+      sender: { name: 'Love Ignite', email: BREVO_SENDER_EMAIL },
       to: [{ email: to, name: name }],
       subject: 'Verify your Love Ignite account',
       htmlContent: `
