@@ -13,6 +13,10 @@ services:
     command: >
       sh -c "sleep 5 && bun run prisma:deploy && bun src/index.ts"
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     logging:
       driver: "json-file"
       options:
