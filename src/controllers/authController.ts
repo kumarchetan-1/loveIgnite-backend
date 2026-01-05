@@ -20,7 +20,7 @@ const generateOTP = () => {
 const sendEmail = async (to: string, name: string, otp: string, type: 'verification' | 'reset' = 'verification') => {
   console.log(`Attempting to send ${type} email to: ${to}`);
   
-  if (!BREVO_API_KEY) {
+  if (!BREVO_API_KEY) { 
     console.error('BREVO_API_KEY is missing in environment variables');
     return;
   }
