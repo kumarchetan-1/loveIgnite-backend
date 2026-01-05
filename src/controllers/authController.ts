@@ -18,10 +18,7 @@ const generateOTP = () => {
 
 // Helper to send email via Brevo
 const sendEmail = async (to: string, name: string, otp: string, type: 'verification' | 'reset' = 'verification') => {
-  console.log(`Attempting to send ${type} email to: ${to}`);
-  
-  if (!BREVO_API_KEY) { 
-    console.error('BREVO_API_KEY is missing in environment variables');
+  if (!BREVO_API_KEY) {
     return;
   }
 
@@ -56,13 +53,10 @@ const sendEmail = async (to: string, name: string, otp: string, type: 'verificat
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Brevo API error details:', JSON.stringify(errorData));
-    } else {
-      console.log(`Successfully sent ${type} email to: ${to}`);
+      // Failed to send email silently
     }
   } catch (error) {
-    console.error('Failed to call Brevo API:', error);
+    // Silent fail for email
   }
 };
 
@@ -107,7 +101,6 @@ export const signup = async (req: Request, res: Response) => {
       isPremium: (user as any).isPremium ?? false
     });
   } catch (error) {
-    console.error('Signup error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -147,7 +140,6 @@ export const login = async (req: Request, res: Response) => {
       isPremium: (user as any).isPremium ?? false
     });
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -187,7 +179,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     res.json({ message: 'Email verified successfully' });
   } catch (error) {
-    console.error('Verification error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -223,7 +214,6 @@ export const resendOTP = async (req: Request, res: Response) => {
 
     res.json({ message: 'Verification code resent successfully' });
   } catch (error) {
-    console.error('Resend error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -234,7 +224,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const user = await prismaClient.user.findUnique({ where: { email } });
     if (!user) {
-      console.log(`Forgot password attempt for non-existent email: ${email}`);
       // For security reasons, don't reveal if user exists
       return res.json({ message: 'If an account exists with this email, a reset code has been sent.' });
     }
@@ -254,7 +243,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'If an account exists with this email, a reset code has been sent.' });
   } catch (error) {
-    console.error('Forgot password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -286,7 +274,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
-    console.error('Reset password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -295,7 +282,6 @@ export const googleAuth = async (req: Request, res: Response) => {
   const { idToken } = req.body;
 
   if (!GOOGLE_CLIENT_ID) {
-    console.error('GOOGLE_CLIENT_ID is missing');
     return res.status(500).json({ error: 'Google configuration error' });
   }
 
@@ -356,7 +342,6 @@ export const googleAuth = async (req: Request, res: Response) => {
       isPremium: (user as any).isPremium ?? false
     });
   } catch (error) {
-    console.error('Google auth error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

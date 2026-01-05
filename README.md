@@ -44,9 +44,9 @@ The backend service for the Love Ignite app, providing user authentication, clou
    ```
 
 5. Start the development server:
-   ```bash
-   bun run dev
-   ```
+```bash
+bun run dev
+```
 
 ---
 
