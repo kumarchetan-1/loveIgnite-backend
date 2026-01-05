@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'loveIgnite-backend/**'
+      - '**'
       - '.github/workflows/backend-deploy.yml'
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./loveIgnite-backend
+          context: .
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/loveignite-backend:latest
 
