@@ -1,11 +1,15 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import prismaClient from '../lib/prisma.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@loveignite.chetankumar.me';
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'kumarchetan.npr@gmail.com';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Helper to generate a 6-digit OTP
 const generateOTP = () => {
@@ -119,6 +123,10 @@ export const login = async (req: Request, res: Response) => {
     });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (!user.password) {
+      return res.status(401).json({ error: 'Please use Google login for this account' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -279,6 +287,76 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const googleAuth = async (req: Request, res: Response) => {
+  const { idToken } = req.body;
+
+  if (!GOOGLE_CLIENT_ID) {
+    console.error('GOOGLE_CLIENT_ID is missing');
+    return res.status(500).json({ error: 'Google configuration error' });
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return res.status(400).json({ error: 'Invalid Google token' });
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email not provided by Google' });
+    }
+
+    let user = await prismaClient.user.findFirst({
+      where: {
+        OR: [
+          { googleId },
+          { email }
+        ]
+      }
+    });
+
+    if (user) {
+      // Update googleId if not set (user existed with same email)
+      if (!user.googleId) {
+        user = await prismaClient.user.update({
+          where: { id: user.id },
+          data: { googleId }
+        });
+      }
+    } else {
+      // Create new user
+      user = await prismaClient.user.create({
+        data: {
+          email,
+          name: name || null,
+          googleId,
+          isVerified: true, // Google accounts are pre-verified
+        }
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({
+      token,
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      isPremium: (user as any).isPremium ?? false
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
