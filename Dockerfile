@@ -20,8 +20,8 @@ RUN DATABASE_URL="postgresql://unused:unused@localhost:5432/unused" bun run pris
 # Stage 2: Runtime
 FROM oven/bun:1
 
-# Install SSL certificates (required for Prisma to connect to DB)
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install SSL certificates and openssl (required for Prisma)
+RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

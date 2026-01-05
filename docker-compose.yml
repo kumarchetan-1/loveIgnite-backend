@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/kumarchetan-1/loveignite-backend:latest
     expose:
       - '3000'
     depends_on:
