@@ -1,6 +1,8 @@
 services:
   app:
     image: ghcr.io/kumarchetan-1/loveignite-backend:latest
+    build:
+      context: .
     expose:
       - '3000'
     depends_on:

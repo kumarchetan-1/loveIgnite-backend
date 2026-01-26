@@ -3,8 +3,10 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import { initChatSocket } from './websocket/chatSocket.js';
 
 
 const app = express();
@@ -21,7 +23,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initChatSocket(server);
+
+server.listen(PORT, () => {
   // Silent start
 });
 
